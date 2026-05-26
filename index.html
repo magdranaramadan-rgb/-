@@ -1,0 +1,426 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>من سيربح المليون - نسخة المبرمج مجد</title>
+    <style>
+        * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
+        body {
+            background: radial-gradient(circle, #000033, #000);
+            color: white;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            margin: 0; padding: 10px;
+            display: flex; justify-content: center; align-items: center;
+            min-height: 100vh; overflow: hidden;
+        }
+        
+        /* حاوية الموبايل */
+        .phone-container {
+            width: 100%; max-width: 410px; height: 92vh;
+            background: rgba(0, 0, 40, 0.95);
+            border: 2px solid #ffcc00; border-radius: 30px;
+            padding: 15px; display: flex; flex-direction: column;
+            justify-content: space-between; position: relative;
+            box-shadow: 0 12px 35px rgba(0,0,0,0.9);
+        }
+
+        /* الشاشات المنبثقة */
+        .screen {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            background: #000015; border-radius: 28px; z-index: 10;
+            display: flex; flex-direction: column; justify-content: center;
+            align-items: center; padding: 25px; text-align: center;
+        }
+        .hidden { display: none !important; }
+        h2 { color: #ffcc00; text-shadow: 0 0 10px rgba(255,204,0,0.4); margin-bottom: 20px; }
+        
+        select, .menu-btn {
+            width: 90%; padding: 14px; font-size: 17px;
+            background: #000033; color: #ffcc00; border: 2px solid #ffcc00;
+            border-radius: 25px; margin: 10px 0; font-weight: bold; cursor: pointer;
+        }
+
+        /* زر معلومات المبرمج المخصص */
+        .dev-btn {
+            width: 90%; padding: 10px; font-size: 14px;
+            background: linear-gradient(to right, #004411, #002200);
+            color: #00ff00; border: 1px solid #00ff00;
+            border-radius: 20px; font-weight: bold; cursor: pointer; margin-bottom: 15px;
+        }
+        
+        /* الهيدر العلوي */
+        .game-header {
+            display: flex; justify-content: space-between; align-items: center;
+            background: rgba(0,0,0,0.5); padding: 10px 15px;
+            border-radius: 15px; border: 1px solid #ffcc00; font-size: 14px;
+        }
+        .hearts { color: #ff3333; font-size: 16px; font-weight: bold; }
+        
+        /* شريط النقاط والتقدم */
+        .progress-bar { display: flex; justify-content: space-between; margin: 12px 0; }
+        .progress-dot { width: 8%; height: 8px; background: #333; border-radius: 4px; }
+        .progress-dot.active { background: #ffcc00; box-shadow: 0 0 8px #ffcc00; }
+        .progress-dot.passed { background: #00ff00; }
+
+        /* حاوية السؤال */
+        .question-container {
+            background: linear-gradient(to bottom, #000055, #000011);
+            border: 2px solid #ffcc00; border-radius: 20px;
+            padding: 20px; text-align: center; font-size: 18px;
+            font-weight: bold; line-height: 1.5; margin-bottom: 15px;
+            flex-grow: 1; display: flex; align-items: center; justify-content: center;
+        }
+
+        /* أزرار الإجابات الطولية للموبايل */
+        .answers-flex { display: flex; flex-direction: column; gap: 10px; }
+      
+        .answer-btn {  .
+            width: 100%; padding: 14px 18px; font-size: 15px; color: white;
+            background: linear-gradient(to right, #000033, #000066);
+            border: 1px solid #ffcc00; border-radius: 20px; text-align: right; cursor: pointer;
+        }
+        .answer-btn:active { background: #ffcc00; color: black; }
+        .answer-btn span { color: #ffcc00; margin-left: 8px; font-weight: bold; }
+
+        /* أزرار المساعدة */
+        .helpers-box { display: flex; justify-content: space-between; margin-top: 15px; }
+        .helper-btn {
+            background: #000; color: #ffcc00; border: 1px solid #ffcc00;
+            padding: 10px; border-radius: 12px; font-size: 13px; width: 48%;
+        }
+        .helper-btn:disabled { opacity: 0.3; }
+        .timer-display { font-size: 28px; color: #ff3333; font-weight: bold; margin: 15px 0; }
+        
+        .info-card {
+            background: rgba(255, 255, 255, 0.07);
+            border: 1px solid #ffcc00; border-radius: 15px;
+            padding: 20px; text-align: right; width: 90%; line-height: 2;
+            font-size: 16px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
+        }
+        .info-card span { color: #ffcc00; font-weight: bold; }
+    </style>
+</head>
+<body>
+
+<div class="phone-container">
+    
+    <div id="welcomeScreen" class="screen">
+        <h2>من سيربح المليون</h2>
+        <p style="color: #aaa; font-size: 13px; margin-bottom: 20px;">40 مرحلة بدون أي تكرار في الأسئلة</p>
+        
+        <button class="dev-btn" onclick="openDevInfo()">👨‍💻 معلومات المصمم والمبرمج</button>
+
+        <select id="userAge">
+            <option value="kids">عمر أقل من 10 سنوات (ألغاز منوعة خفيفة)</option>
+            <option value="teens" selected>عمر 11 إلى 14 سنة (برمجة، فيزياء، كيمياء، ميكانيك)</option>
+            <option value="adults">عمر 15 سنة فما فوق (ثقافة عامة وعلوم متقدمة)</option>
+        </select>
+        <button class="menu-btn" onclick="initGame()">ابدأ اللعب الآن 🎮</button>
+    </div>
+
+    <div id="devInfoScreen" class="screen hidden">
+        <h2>👨‍💻 بطاقة المبرمج الذكي</h2>
+        <div class="info-card">
+            <div>• اسم المبرمج: <span>مجد</span></div>
+            <div>• الكنية والعائلة: <span>[نقشة]</span></div>
+            <div>• الجنسية الأصلية: <span>[سوريا]</span></div>
+            <div style="border-top: 1px dashed #444; margin-top: 10px; padding-top: 5px; font-size:13px; color:#888; text-align:center;">حقوق التطوير البرمجي محفوظة بالكامل © 2026</div>
+        </div>
+        <button class="menu-btn" style="background:gold; color:black; margin-top: 25px;" onclick="closeDevInfo()">العودة لصفحة البدء ↩️</button>
+    </div>
+
+    <div id="lockScreen" class="screen hidden">
+        <h2>❌ نفدت القلوب بالكامل</h2>
+        <p>يتم شحن قلب جديد كل 10 دقائق تلقائياً</p>
+        <div id="heartTimer" class="timer-display">10:00</div>
+        <p id="totalHeartsStatus" style="color: #888; font-size: 14px;">القلوب الحالية: 0 / 3</p>
+    </div>
+
+    <div id="configScreen" class="screen hidden">
+        <h2>⚙️ لوحة التحكم</h2>
+        <button class="menu-btn" id="audioToggle" onclick="switchAudio()">الصومت: مفعّل 🔊</button>
+        <button class="menu-btn" style="background:#440000; color:white; border-color:#ff4444;" onclick="hardReset()">تصفير اللعبة بالكامل 🔄</button>
+        <button class="menu-btn" style="background:gold; color:black;" onclick="closeConfig()">استمرار اللعب ↩️</button>
+    </div>
+
+    <div class="game-header">
+        <span id="levelLabel">المرحلة: 1 / 40</span>
+        <div class="hearts" id="heartsLabel">❤️❤️❤️</div>
+        <span style="cursor:pointer; color:gold; font-size: 18px;" onclick="openConfig()">⚙️</span>
+    </div>
+
+    <div class="progress-bar" id="progressContainer"></div>
+
+    <div class="question-container" id="mainQuestion">جاري تحميل المحتوى الفريد...</div>
+
+    <div class="answers-flex" id="answersContainer"></div>
+
+    <div class="helpers-box">
+        <button id="fiftyLifeline" class="helper-btn" onclick="triggerFiftyFifty()">💡 حذف إجابتين</button>
+        <button id="hintLifeline" class="helper-btn" onclick="triggerHint()">🔍 تلميح ذكي</button>
+    </div>
+
+</div>
+
+<script>
+    let currentLevel = parseInt(localStorage.getItem('savedLevel')) || 1;
+    let currentQIndex = 0;
+    let activeQuestion = null;
+    let fiftyUsedThisQ = false;
+    let soundOn = true;
+    let ageGroup = 'teens';
+    
+    let heartsCount = parseInt(localStorage.getItem('savedHearts')) !== undefined && !isNaN(parseInt(localStorage.getItem('savedHearts'))) ? parseInt(localStorage.getItem('savedHearts')) : 3;
+    let nextHeartTime = parseInt(localStorage.getItem('savedHeartTime')) || 0;
+    let globalInterval = null;
+
+    const audioContext = new (window.AudioContext || window.webkitAudioContext)();
+    function playBeep(style) {
+        if (!soundOn) return;
+        let o = audioContext.createOscillator();
+        let g = audioContext.createGain();
+        o.connect(g); g.connect(audioContext.destination);
+        if (style === 'win') {
+            o.frequency.setValueAtTime(587.33, audioContext.currentTime);
+            o.frequency.setValueAtTime(880, audioContext.currentTime + 0.12);
+            g.gain.setValueAtTime(0.15, audioContext.currentTime);
+            o.start(); o.stop(audioContext.currentTime + 0.3);
+        } else if (style === 'lose') {
+            o.frequency.setValueAtTime(130, audioContext.currentTime);
+            g.gain.setValueAtTime(0.3, audioContext.currentTime);
+            o.start(); o.stop(audioContext.currentTime + 0.4);
+        } else if (style === 'tap') {
+            o.frequency.setValueAtTime(440, audioContext.currentTime);
+            g.gain.setValueAtTime(0.05, audioContext.currentTime);
+            o.start(); o.stop(audioContext.currentTime + 0.05);
+        }
+    }
+
+    const conceptsTeens = [
+        { q: "في لغة HTML، أي وسم يُسستخَدم لإنشاء رابط تشعبي ينقل المستخدم لصفحة أخرى؟", o: ["<a>", "<link>", "<href>", "<url>"], c: 0, h: "هو اختصار لكلمة Anchor." },
+        { q: "ما هو العنصر الكيميائي الأكثر وفرة في الكون بأكمله؟", o: ["الأكسجين", "النيتروجين", "الهيدروجين", "الكربون"], c: 2, h: "هو أول عنصر في الجدول الدوري." },
+        { q: "في برمجة الأردوينو، ما هي الدالة التي تتنفذ مرة واحدة فقط عند بدء تشغيل اللوحة؟", o: ["()loop", "()setup", "()init", "()pinMode"], c: 1, h: "تُستخدم لإعداد وتجهيز المنافذ المتصلة." },
+        { q: "ماذا يحدث لسرعة الصوت عندما ينتقل من الهواء إلى داخل مادة صلبة كالحديد؟", o: ["تنخفض كثيراً", "تتوقف تماماً", "تزداد بشكل كبير", "تبقى ثابتة لا تتغير"], c: 2, h: "تقارب الجزيئات في المواد الصلبة ينقل الاهتزازات أسرع." },
+        { q: "أي خاصية في CSS تُستخدم لتغيير المسافة الفاصلة بين حدود العنصر ومحتواه الداخلي؟", o: ["margin", "padding", "border", "space"], c: 1, h: "تسمى الهامش الداخلي للعنصر." },
+        { q: "ما هي الوحدة الفيزيائية المستخدمة لقياس التردد اللاسلكي والموجات؟", o: ["الأوم", "الوات", "الهرتز", "الفولت"], c: 2, h: "يرمز لها بالرمز Hz." },
+        { q: "في لغة JavaScript، كيف نكتب جملة شرطية للتحقق مما إذا كان المتغير x يساوي الرقم 5 تماماً قيمةً ونوعاً؟", o: ["if x = 5", "if(x == 5)", "if(x === 5)", "if x == 5 then"], c: 2, h: "نستخدم معامل التطابق الثلاثي للأمان التام." },
+        { q: "ما هو اسم المكون الإلكتروني الذي يسمح بمرور التيار الكهربائي في اتجاه واحد فقط ويمنعه في الاتجاه المعاكس؟", o: ["المكثف", "الدايود (Diode)", "المقاومة", "الملف"], c: 1, h: "الصمام الثنائي، ومن أنواعه الليد المشع للضوء." },
+        { q: "حزورة منطقية: شيء يسير بلا أرجل، ويبكي بلا عيون، ويرافقك في السماء، فما هو؟", o: ["الغيوم", "الرياح", "القمر", "الظل"], c: 0, h: "تمطر ماءً وتتحرك مع الهواء." },
+        { q: "في أنظمة الميكانيك، ما هي الوظيفة الأساسية لاستخدام 'المحامل الكروية' (الرولمان بلي) بين الأجزاء المتحركة؟", o: ["زيادة الوزن", "تقليل الاحتكاك وتسهيل الدوران", "توصيل الكهرباء", "تغيير اتجاه الحركة"], c: 1, h: "تحول الاحتكاك الانزلاقي الصعب إلى احتكاك تدحرجي سلس." }
+    ];
+
+    function buildAdvancedDatabase() {
+        if(conceptsTeens.length >= 400) return;
+        
+        const codingTopics = ["وسم <script>", "تنسيق Flexbox", "مفهوم الـ DOM", "مصفوفات C++", "ذاكرة الكاش", "بروتوكول IP", "نظام الـ 64 بت", "مكتبة GDevelop", "أمر التكرار while", "الـ Console في المتصفح"];
+        const physicsTopics = ["قانون إنكسار الضوء", "الجاذبية الكونية", "القصور الذاتي", "الضغط الجوي", "التيار المتناوب", "المجال المغناطيسي", "الموجات فوق الصوتية", "طاقة الوضع الكامنة", "تأثير دوبلر", "قوانين نيوتن"];
+        const chemistryTopics = ["الرابطة التساهمية", "رقم الهيدروجين pH", "غاز الأوزون O3", "ظاهرة التسامي", "العناصر الخاملة", "تفاعل الأكسدة", "النحاس والكهرباء", "حالات المادة الأربعة", "التقطير التجزيئي", "الذرة والنيترونات"];
+        const logicTopics = ["لغز الساعة", "أحجية المفتاح", "منطق الصناديق", "عجلة التروس المتداخلة", "المسارات الرقمية", "لغز الباب السري", "انعكاس المرآة", "الوزن النوعي للميزان", "المتتاليات الرقمية", "أحجية الشمعة"];
+
+        for (let l = 2; l <= 40; l++) {
+            for (let q = 0; q < 10; q++) {
+                let id = (l * 10) + q;
+                let text = "", opts = [], ansIdx = 0, hint = "";
+                let type = id % 4;
+
+                if (type === 0) {
+                    let topic = codingTopics[(l + q) % codingTopics.length];
+                    text = `في تكنولوجيا المعلومات والويب [مرحلة ${l}]: ما هي الميزة الجوهرية أو الاستخدام الأساسي لـ (${topic}) في التطوير الهيكلي؟`;
+                    opts = ["إدارة ومعالجة البيانات ديناميكياً", "تلوين الخلفيات فقط", "تصميم شاشات عريضة للابتوب", "إيقاف عمل نظام التشغيل"];
+                    ansIdx = 0; hint = "تتعلق بالتحكم والمنطق البرمجي السلس.";
+                } else if (type === 1) {
+                    let topic = physicsTopics[(l + q) % physicsTopics.length];
+                    text = `في مختبر الفيزياء التطبيقية [مرحلة ${l}]: كيف يؤثر القوة أو المفهوم الفيزيائي لـ (${topic}) على الأجسام المحيطة بنا؟`;
+                    opts = ["توليد طاقة حركية معاكسة", "تغيير الخواص الكيميائية للماء", "توليد ظواهر طبيعية قابلة للقياس", "إلغاء الكتلة المادية بالكامل"];
+                    ansIdx = 2; hint = "كل ظاهرة فيزيائية ينتج عنها أثر ملموس وقابل للحساب المباشر.";
+                } else if (type === 2) {
+                    let topic = chemistryTopics[(l + q) % chemistryTopics.length];
+                    text = `في الكيمياء وتصنيف العناصر [مرحلة ${l}]: عند دراسة مادة (${topic})، ما هي الخاصية الفريدة التي تميزها في التفاعلات؟`;
+                    opts = ["عدم التأثر بالحرارة", "إنتاج مركبات جديدة مختلفة تماماً", "تغيير لون الإناء فقط", "التحول لغاز النيتروجين دائماً"];
+                    ansIdx = 1; hint = "التفاعل الكيميائي يغير الروابط لإنتاج جزيئات جديدة.";
+                } else {
+                    let topic = logicTopics[(l + q) % logicTopics.length];
+                    text = `أحجية ذكاء ميكانيكية منطقية [مرحلة ${l}]: إذا واجهت مسألة تعتمد على منطق (${topic})، ما هي الخطوة الرياضية الصحيحة للحل الفوري؟`;
+                    opts = ["إهمال المعطيات والأرقام", "الاعتماد على التخمين العشوائي", "تحليل العلاقات والتناسب الهندسي", "إعادة تشغيل النظام من الصفر"];
+                    ansIdx = 2; hint = "المنطق يعتمد على ربط الأسباب بالنتائج هندسياً.";
+                }
+                conceptsTeens.push({ q: text, o: opts, c: ansIdx, h: hint });
+            }
+        }
+    }
+
+    /* دوال التحكم في لوحة المبرمج الجديد */
+    function openDevInfo() { playBeep('tap'); document.getElementById("devInfoScreen").classList.remove("hidden"); }
+    function closeDevInfo() { playBeep('tap'); document.getElementById("devInfoScreen").classList.add("hidden"); }
+
+    function initGame() {
+        playBeep('tap');
+        ageGroup = document.getElementById("userAge").value;
+        buildAdvancedDatabase();
+        document.getElementById("welcomeScreen").classList.add("hidden");
+        buildProgressDots();
+        checkHeartsAndTimer();
+    }
+
+    function buildProgressDots() {
+        let h = "";
+        for (let i = 0; i < 10; i++) h += `<div class="progress-dot" id="dot-${i}"></div>`;
+        document.getElementById("progressContainer").innerHTML = h;
+    }
+
+    function renderQuestion() {
+        if (heartsCount <= 0) return;
+        fiftyUsedThisQ = false;
+        document.getElementById("fiftyLifeline").disabled = false;
+        
+        document.getElementById("levelLabel").innerText = `المرحلة: ${currentLevel} / 40`;
+        updateHeartsUI();
+
+        for (let i = 0; i < 10; i++) {
+            let d = document.getElementById(`dot-${i}`);
+            if (!d) continue;
+            d.className = "progress-dot";
+            if (i === currentQIndex) d.classList.add("active");
+            if (i < currentQIndex) d.classList.add("passed");
+        }
+
+        let dbIndex = ((currentLevel - 1) * 10) + currentQIndex;
+        activeQuestion = conceptsTeens[dbIndex];
+
+        document.getElementById("mainQuestion").innerText = activeQuestion.q;
+        let h = "";
+        const chars = ['أ', 'ب', 'ج', 'د'];
+        activeQuestion.o.forEach((opt, idx) => {
+            h += `<button class="answer-btn" id="ans-${idx}" onclick="processAnswer(${idx})"><span>${chars[idx]}:</span> ${opt}</button>`;
+        });
+        document.getElementById("answersContainer").innerHTML = h;
+    }
+
+    function processAnswer(selected) {
+        if (selected === activeQuestion.c) {
+            playBeep('win');
+            currentQIndex++;
+            if (currentQIndex >= 10) {
+                currentLevel++;
+                localStorage.setItem('savedLevel', currentLevel);
+                if (currentLevel > 40) {
+                    alert("يا لك من عبقري  فذ! لقد أنهيت الـ 40 مرحلة كاملة بـ 400 سؤال فريد دون تكرار وفزت بالمليون الكبرى! 🏆");
+                    hardReset();
+                    return;
+                }
+                alert(`أحسنت! أكملت الأسئلة الـ 10 بنجاح. جاري الانتقال للمرحلة رقم ${currentLevel}`);
+                currentQIndex = 0;
+            }
+            renderQuestion();
+        } else {
+            playBeep('lose');
+            heartsCount--;
+            localStorage.setItem('savedHearts', heartsCount);
+            updateHeartsUI();
+            
+            if (heartsCount <= 0) {
+                if (nextHeartTime === 0) {
+                    nextHeartTime = Date.now() + 600000;
+                    localStorage.setItem('savedHeartTime', nextHeartTime);
+                }
+                lockGameByHearts();
+            } else {
+                alert(`إجابة خاطئة! خسرت قلباً واحداً، يتبقى لديك ${heartsCount} محاولات. فكر بذكاء في نفس السؤال قبل الضغط.`);
+                renderQuestion();
+            }
+        }
+    }
+
+    function updateHeartsUI() {
+        let s = "";
+        for (let i = 0; i < 3; i++) s += (i < heartsCount) ? "❤️" : "🖤";
+        document.getElementById("heartsLabel").innerHTML = s;
+    }
+
+    function checkHeartsAndTimer() {
+        if (globalInterval) clearInterval(globalInterval);
+
+        globalInterval = setInterval(() => {
+            if (nextHeartTime > 0) {
+                let diff = nextHeartTime - Date.now();
+                if (diff <= 0) {
+                    heartsCount++;
+                    localStorage.setItem('savedHearts', heartsCount);
+                    playBeep('win');
+                    if (heartsCount >= 3) {
+                        heartsCount = 3;
+                        nextHeartTime = 0;
+                        localStorage.removeItem('savedHeartTime');
+                        document.getElementById("lockScreen").classList.add("hidden");
+                    } else {
+                        nextHeartTime = Date.now() + 600000;
+                        localStorage.setItem('savedHeartTime', nextHeartTime);
+                    }
+                    localStorage.setItem('savedHearts', heartsCount);
+                    updateHeartsUI();
+                    if (heartsCount > 0 && !document.getElementById("lockScreen").classList.contains("hidden")) {
+                        document.getElementById("lockScreen").classList.add("hidden");
+                        renderQuestion();
+                    }
+                } else {
+                    let m = Math.floor(diff / 60000);
+                    let s = Math.floor((diff % 60000) / 1000);
+                    document.getElementById("heartTimer").innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
+                    document.getElementById("totalHeartsStatus").innerText = `القلوب الحالية: ${heartsCount} / 3`;
+                }
+            }
+        }, 1000);
+
+        if (heartsCount <= 0) {
+            lockGameByHearts();
+        } else {
+            document.getElementById("lockScreen").classList.add("hidden");
+            renderQuestion();
+        }
+    }
+
+    function lockGameByHearts() { document.getElementById("lockScreen").classList.remove("hidden"); }
+
+    function triggerFiftyFifty() {
+        if (fiftyUsedThisQ) return;
+        playBeep('tap');
+        let wrongs = [];
+        for (let i = 0; i < 4; i++) {
+            if (i !== activeQuestion.c) wrongs.push(i);
+        }
+        wrongs.sort(() => Math.random() - 0.5);
+        document.getElementById(`ans-${wrongs[0]}`).style.visibility = "hidden";
+        document.getElementById(`ans-${wrongs[1]}`).style.visibility = "hidden";
+        fiftyUsedThisQ = true;
+        document.getElementById("fiftyLifeline").disabled = true;
+    }
+
+    function triggerHint() {
+        playBeep('tap');
+        alert(`💡 تلميح هندسي: ${activeQuestion.h}`);
+    }
+
+    function openConfig() { playBeep('tap'); document.getElementById("configScreen").classList.remove("hidden"); }
+    function closeConfig() { playBeep('tap'); document.getElementById("configScreen").classList.add("hidden"); }
+    
+    function switchAudio() {
+        soundOn = !soundOn;
+        document.getElementById("audioToggle").innerText = soundOn ? "الصوت: مفعّل 🔊" : "الصوت: كتم 🔇";
+        playBeep('tap');
+    }
+
+    function hardReset() {
+        localStorage.clear();
+        currentLevel = 1; currentQIndex = 0; heartsCount = 3; nextHeartTime = 0;
+        if (globalInterval) clearInterval(globalInterval);
+        document.getElementById("configScreen").classList.add("hidden");
+        document.getElementById("lockScreen").classList.add("hidden");
+        document.getElementById("welcomeScreen").classList.remove("hidden");
+    }
+
+    updateHeartsUI();
+</script>
+
+</body>
+</html>
