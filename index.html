@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>من سيربح المليون - نسخة المبرمج مجد</title>
+    <title>من سيربحا لحسنات</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body {
@@ -132,8 +132,9 @@
 
     <div id="lockScreen" class="screen hidden">
         <h2>❌ نفدت القلوب بالكامل</h2>
-        <p>يتم شحن قلب جديد كل 10 دقائق تلقائياً</p>
-        <div id="heartTimer" class="timer-display">10:00</div>
+        <p style="font-size: 15px; color: #ddd;">اضغط على زر الاستغفار، كل 50 مرة ستحصل على قلب جديد</p>
+        <button class="menu-btn" style="background: linear-gradient(to right, #004411, #002200); color:#00ff00; border-color:#00ff00; font-size:22px; padding: 15px; margin: 15px 0;" onclick="doIstighfar()">أستغفر الله</button>
+        <div id="istighfarCounter" class="timer-display">0 / 50</div>
         <p id="totalHeartsStatus" style="color: #888; font-size: 14px;">القلوب الحالية: 0 / 3</p>
     </div>
 
@@ -175,8 +176,7 @@
     let hintCountThisLevel = 3;
     
     let heartsCount = parseInt(localStorage.getItem('savedHearts')) !== undefined && !isNaN(parseInt(localStorage.getItem('savedHearts'))) ? parseInt(localStorage.getItem('savedHearts')) : 3;
-    let nextHeartTime = parseInt(localStorage.getItem('savedHeartTime')) || 0;
-    let globalInterval = null;
+    let istighfarProgress = parseInt(localStorage.getItem('savedIstighfar')) || 0; // عداد الاستغفار
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     function playBeep(style) {
@@ -218,7 +218,7 @@
             { q: "ما هي السورة التي تسمى الفاضحة؟", o: ["التوبة", "المنافقون", "الأنفال", "الأحزاب"], c: 0, h: "لأنها فضحت المنافقين ولم تبدأ بالبسملة" },
             { q: "من هو الصحابي الذي اهتز لوفاته عرش الرحمن؟", o: ["سعد بن معاذ", "مصعب بن عمير", "حمزة بن عبد المطلب", "خالد بن الوليد"], c: 0, h: "سيد الأوس ورئيسهم" },
             { q: "في أي عام هجري وقعت غزوة أحد؟", o: ["3 هـ", "2 هـ", "4 هـ", "5 هـ"], c: 0, h: "بعد غزوة بدر بعام واحد" },
-            { q: "من هو الغلام الذي أرسله النبي لقراءة القران وتعلم السريانية؟", o: ["زيد بن ثابت", "عبد الله بن مسعود", "أنس بن مالك", "معاذ بن جبل"], c: 0, h: "جامع القرآن وكاتب الوحي الأول" },
+            { q: "من هو الغلام الذي أرسله النبي لقراءة التوراة وتعلم السريانية؟", o: ["زيد بن ثابت", "عبد الله بن مسعود", "أنس بن مالك", "معاذ بن جبل"], c: 0, h: "جامع القرآن وكاتب الوحي الأول" },
             { q: "كم عدد أجنحة جبريل عليه السلام التي رآه النبي بها؟", o: ["600 جناح", "300 جناح", "100 جناح", "70 جناح"], c: 0, h: "رقم مئوي كبير سد الأفق" },
             { q: "ما هي السورة التي تسمى سنام القرآن؟", o: ["البقرة", "يس", "الرحمن", "الكهف"], c: 0, h: "أطول سور الكتاب" },
             { q: "من هو كليم الله من الأنبياء؟", o: ["موسى عليه السلام", "عيسى عليه السلام", "إبراهيم عليه السلام", "نوح عليه السلام"], c: 0, h: "صاحب العصا والمعجزات التسع" },
@@ -359,10 +359,6 @@
             updateHeartsUI();
             
             if (heartsCount <= 0) {
-                if (nextHeartTime === 0) {
-                    nextHeartTime = Date.now() + 600000;
-                    localStorage.setItem('savedHeartTime', nextHeartTime);
-                }
                 lockGameByHearts();
             } else {
                 alert(`إجابة خاطئة! خسرت قلباً واحداً، يتبقى لديك ${heartsCount} محاولات. فكر بذكاء في نفس السؤال قبل الضغط.`);
@@ -378,39 +374,7 @@
     }
 
     function checkHeartsAndTimer() {
-        if (globalInterval) clearInterval(globalInterval);
-
-        globalInterval = setInterval(() => {
-            if (nextHeartTime > 0) {
-                let diff = nextHeartTime - Date.now();
-                if (diff <= 0) {
-                    heartsCount++;
-                    localStorage.setItem('savedHearts', heartsCount);
-                    playBeep('win');
-                    if (heartsCount >= 3) {
-                        heartsCount = 3;
-                        nextHeartTime = 0;
-                        localStorage.removeItem('savedHeartTime');
-                        document.getElementById("lockScreen").classList.add("hidden");
-                    } else {
-                        nextHeartTime = Date.now() + 600000;
-                        localStorage.setItem('savedHeartTime', nextHeartTime);
-                    }
-                    localStorage.setItem('savedHearts', heartsCount);
-                    updateHeartsUI();
-                    if (heartsCount > 0 && !document.getElementById("lockScreen").classList.contains("hidden")) {
-                        document.getElementById("lockScreen").classList.add("hidden");
-                        renderQuestion();
-                    }
-                } else {
-                    let m = Math.floor(diff / 60000);
-                    let s = Math.floor((diff % 60000) / 1000);
-                    document.getElementById("heartTimer").innerText = `${m < 10 ? '0' + m : m}:${s < 10 ? '0' + s : s}`;
-                    document.getElementById("totalHeartsStatus").innerText = `القلوب الحالية: ${heartsCount} / 3`;
-                }
-            }
-        }, 1000);
-
+        updateIstighfarUI();
         if (heartsCount <= 0) {
             lockGameByHearts();
         } else {
@@ -419,7 +383,36 @@
         }
     }
 
-    function lockGameByHearts() { document.getElementById("lockScreen").classList.remove("hidden"); }
+    function lockGameByHearts() { 
+        document.getElementById("lockScreen").classList.remove("hidden"); 
+        updateIstighfarUI();
+    }
+
+    function doIstighfar() {
+        playBeep('tap');
+        istighfarProgress++;
+        if (istighfarProgress >= 50) {
+            if (heartsCount < 3) heartsCount++;
+            istighfarProgress = 0;
+            localStorage.setItem('savedHearts', heartsCount);
+            playBeep('win');
+            
+            if (heartsCount > 0 && !document.getElementById("lockScreen").classList.contains("hidden")) {
+                document.getElementById("lockScreen").classList.add("hidden");
+                renderQuestion();
+            }
+        }
+        localStorage.setItem('savedIstighfar', istighfarProgress);
+        updateIstighfarUI();
+    }
+
+    function updateIstighfarUI() {
+        let counterEl = document.getElementById("istighfarCounter");
+        if (counterEl) counterEl.innerText = `${istighfarProgress} / 50`;
+        let totalEl = document.getElementById("totalHeartsStatus");
+        if (totalEl) totalEl.innerText = `القلوب الحالية: ${heartsCount} / 3`;
+        updateHeartsUI();
+    }
 
     function triggerFiftyFifty() {
         if (fiftyCountThisLevel <= 0) return;
@@ -461,9 +454,8 @@
 
     function hardReset() {
         localStorage.clear();
-        currentLevel = 1; currentQIndex = 0; heartsCount = 3; nextHeartTime = 0;
+        currentLevel = 1; currentQIndex = 0; heartsCount = 3; istighfarProgress = 0;
         fiftyCountThisLevel = 3; hintCountThisLevel = 3;
-        if (globalInterval) clearInterval(globalInterval);
         document.getElementById("configScreen").classList.add("hidden");
         document.getElementById("lockScreen").classList.add("hidden");
         document.getElementById("welcomeScreen").classList.remove("hidden");
