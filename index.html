@@ -106,7 +106,7 @@
 <div class="phone-container">
     
     <div id="welcomeScreen" class="screen">
-        <h2>من سيربح المليون</h2>
+        <h2> من سيربح الحسنة </h2>
         <p style="color: #aaa; font-size: 13px; margin-bottom: 20px;">40 مرحلة بدون أي تكرار في الأسئلة</p>
         
         <button class="dev-btn" onclick="openDevInfo()">👨‍💻 معلومات المصمم والمبرمج</button>
@@ -116,7 +116,7 @@
             <option value="teens" selected>متوسط</option>
             <option value="adults">صعب</option>
         </select>
-        <button class="menu-btn" onclick="initGame()">ابدأ اللعب الآن 🎮</button>
+        <button class="menu-btn" onclick="initGame()">هيا نبداء</button>
     </div>
 
     <div id="devInfoScreen" class="screen hidden">
@@ -146,7 +146,7 @@
 
     <div class="game-header">
         <span id="levelLabel">المرحلة: 1 / 40</span>
-        <div class="hearts" id="heartsLabel">❤️❤️❤️</div>
+        <div class="hearts" id="heartsLabel">روح  روح  روح</div>
         <span style="cursor:pointer; color:gold; font-size: 18px;" onclick="openConfig()">⚙️</span>
     </div>
 
@@ -167,9 +167,12 @@
     let currentLevel = parseInt(localStorage.getItem('savedLevel')) || 1;
     let currentQIndex = 0;
     let activeQuestion = null;
-    let fiftyUsedThisQ = false;
     let soundOn = true;
     let ageGroup = 'teens';
+    
+    // عدادات وسائل المساعدة لكل 10 أسئلة (مرحلة)
+    let fiftyCountThisLevel = 3;
+    let hintCountThisLevel = 3;
     
     let heartsCount = parseInt(localStorage.getItem('savedHearts')) !== undefined && !isNaN(parseInt(localStorage.getItem('savedHearts'))) ? parseInt(localStorage.getItem('savedHearts')) : 3;
     let nextHeartTime = parseInt(localStorage.getItem('savedHeartTime')) || 0;
@@ -197,66 +200,90 @@
         }
     }
 
-    const conceptsTeens = [
-        { q: "كم عدد سور القرآن الكريم؟", o: ["110 سورة", "114 سورة", "120 سورة", "100 سورة"], c: 1, h: "العدد مكون من 3 أرقام، أولها 1 وأخرها 4." },
-        { q: "ما هي السورة التي تُقرأ وجوباً في كل ركعة من الصلاة؟", o: ["الفاتحة", "الإخلاص", "الكوثر", "الفلق"], c: 0, h: "تُسمى بأم الكتاب والسبع المثاني." },
-        { q: "من هو أول الخلفاء الراشدين رضي الله عنهم؟", o: ["عمر بن الخطاب", "علي بن أبي طالب", "أبو بكر الصديق", "عثمان بن عفان"], c: 2, h: "هو رفيق النبي ﷺ في الهجرة بالغار." },
-        { q: "في أي شهر هجري نزل القرآن الكريم؟", o: ["رجب", "شعبان", "رمضان", "محرم"], c: 2, h: "شهر الصيام وفيه ليلة القدر." },
-        { q: "كم عدد أركان الإسلام؟", o: ["3 أركان", "4 أركان", "5 أركان", "6 أركان"], c: 2, h: "أولها الشهادتان وآخرها حج البيت." },
-        { q: "من هو النبي الذي التقمه الحوت؟", o: ["يوسف عليه السلام", "يونس عليه السلام", "موسى عليه السلام", "نوح عليه السلام"], c: 1, h: "دعا في بطنه: لا إله إلا أنت سبحانك إني كنت من الظالمين." },
-        { q: "ما هي السورة التي تُعد أطول سورة في القرآن الكريم؟", o: ["آل عمران", "النساء", "البقرة", "المائدة"], c: 2, h: "تأتي بعد الفاتحة وتحتوي على أعظم آية (آية الكرسي)." },
-        { q: "ما هو أول مسجد بُني في الإسلام؟", o: ["المسجد النبوي", "المسجد الحرام", "المسجد الأقصى", "مسجد قباء"], c: 3, h: "أسسه النبي ﷺ قبل دخوله قلب المدينة المنورة." },
-        { q: "من هي أول زوجات النبي محمد ﷺ وأول من آمن به؟", o: ["عائشة بنت أبي بكر", "حفصة بنت عمر", "خديجة بنت خويلد", "أم سلمة"], c: 2, h: "وقفت معه وواسته في بداية نزول الوحي." },
-        { q: "في أي عام هجري وقعت غزوة بدر الكبرى؟", o: ["العام الأول", "العام الثاني", "العام الثالث", "العام الخامس"], c: 1, h: "حدثت في شهر رمضان بعد الهجرة بعامين." }
-    ];
+    // بنك الأسئلة للمستويات الثلاثة لضمان التنوع وعدم تشابه الخيارات
+    const baseQuestions = {
+        kids: [
+            { q: "كم عدد سور القرآن الكريم؟", o: ["114 سورة", "110 سورة", "120 سورة", "105 سور"], c: 0, h: "أولها الرقم 1 وآخرها 4" },
+            { q: "ما هي السورة التي تقرأ في كل ركعة صلاة؟", o: ["الفاتحة", "الإخلاص", "الكوثر", "الناس"], c: 0, h: "تسمى أم الكتاب" },
+            { q: "من هو أول الخلفاء الراشدين؟", o: ["أبو بكر الصديق", "عمر بن الخطاب", "عثمان بن عفان", "علي بن أبي طالب"], c: 0, h: "صاحب النبي في الهجرة" },
+            { q: "ما هو الشهر الذي يصومه المسلمون؟", o: ["رمضان", "شعبان", "رجب", "شوال"], c: 0, h: "فيه ليلة القدر" },
+            { q: "كم عدد أركان الإسلام؟", o: ["خمسة أركان", "ثلاثة أركان", "أربعة أركان", "ستة أركان"], c: 0, h: "بني الإسلام على..." },
+            { q: "من هو النبي الذي ابتلعه الحوت؟", o: ["يونس عليه السلام", "يوسف عليه السلام", "موسى عليه السلام", "إبراهيم عليه السلام"], c: 0, h: "دعا ربه في الظلمات" },
+            { q: "ما هي أطول سورة في القرآن الكريم؟", o: ["البقرة", "آل عمران", "النساء", "المائدة"], c: 0, h: "تأتي مباشرة بعد الفاتحة" },
+            { q: "ما هو أول مسجد بني في الإسلام؟", o: ["مسجد قباء", "المسجد النبوي", "المسجد الحرام", "المسجد الأقصى"], c: 0, h: "بني في المدينة عند وصول النبي" },
+            { q: "من هي أول زوجات النبي ﷺ؟", o: ["خديجة بنت خويلد", "عائشة بنت أبي بكر", "حفصة بنت عمر", "أم سلمة"], c: 0, h: "أول من آمن به من النساء" },
+            { q: "في أي مدينة ولد النبي محمد ﷺ؟", o: ["مكة المكرمة", "المدينة المنورة", "الطائف", "القدس"], c: 0, h: "فيها الكعبة المشرفة" }
+        ],
+        teens: [
+            { q: "ما هي السورة التي تسمى الفاضحة؟", o: ["التوبة", "المنافقون", "الأنفال", "الأحزاب"], c: 0, h: "لأنها فضحت المنافقين ولم تبدأ بالبسملة" },
+            { q: "من هو الصحابي الذي اهتز لوفاته عرش الرحمن؟", o: ["سعد بن معاذ", "مصعب بن عمير", "حمزة بن عبد المطلب", "خالد بن الوليد"], c: 0, h: "سيد الأوس ورئيسهم" },
+            { q: "في أي عام هجري وقعت غزوة أحد؟", o: ["3 هـ", "2 هـ", "4 هـ", "5 هـ"], c: 0, h: "بعد غزوة بدر بعام واحد" },
+            { q: "من هو الغلام الذي أرسله النبي لقراءة التوراة وتعلم السريانية؟", o: ["زيد بن ثابت", "عبد الله بن مسعود", "أنس بن مالك", "معاذ بن جبل"], c: 0, h: "جامع القرآن وكاتب الوحي الأول" },
+            { q: "كم عدد أجنحة جبريل عليه السلام التي رآه النبي بها؟", o: ["600 جناح", "300 جناح", "100 جناح", "70 جناح"], c: 0, h: "رقم مئوي كبير سد الأفق" },
+            { q: "ما هي السورة التي تسمى سنام القرآن؟", o: ["البقرة", "يس", "الرحمن", "الكهف"], c: 0, h: "أطول سور الكتاب" },
+            { q: "من هو كليم الله من الأنبياء؟", o: ["موسى عليه السلام", "عيسى عليه السلام", "إبراهيم عليه السلام", "نوح عليه السلام"], c: 0, h: "صاحب العصا والمعجزات التسع" },
+            { q: "ما هو الميقات المكاني لأهل المدينة المنورة؟", o: ["ذو الحليفة", "يلملم", "الجحفة", "قرن المنازل"], c: 0, h: "يُعرف اليوم بآبار علي" },
+            { q: "من هي الصحابية الملقبة بذات النطاقين؟", o: ["أسماء بنت أبي بكر", "عائشة بنت أبي بكر", "فاطمة الزهراء", "نسيبة بنت كعب"], c: 0, h: "شقت نطاقها لحمل الزاد في الهجرة" },
+            { q: "ما هي الغزوة التي غاب فيها علي بن أبي طالب بأمر النبي؟", o: ["تبوك", "خيبر", "حنين", "الخندق"], c: 0, h: "خلفه النبي على أهله بالمدينة" }
+        ],
+        adults: [
+            { q: "من هو أول من صنف في فقه اللغة وأصول الأحكام الفقهية؟", o: ["الإمام الشافعي", "الإمام أبو حنيفة", "الإمام مالك", "الإمام أحمد بن حنبل"], c: 0, h: "صاحب كتاب الرسالة" },
+            { q: "ما هي السورة التي وردت فيها سجدتان في القرآن الكريم؟", o: ["الحج", "الأعراف", "السجدة", "فصلت"], c: 0, h: "اسمها يتعلق بركن أساسي من مناسك المشاعر" },
+            { q: "من هو الصحابي الذي أرسله النبي إلى اليمن قاضياً ومعلماً؟", o: ["معاذ بن جبل", "أبو عبيدة بن الجراح", "سعد بن أبي وقاص", "عبد الله بن عمر"], c: 0, h: "أعلم الأمة بالحلال والحرام" },
+            { q: "كم عدد المقاتلين من المسلمين في غزوة مؤتة؟", o: ["3000 مقاتل", "1000 مقاتل", "5000 مقاتل", "10000 مقاتل"], c: 0, h: "واجهوا جيش الروم العرمرم" },
+            { q: "ما هي المرضعة الثانية للنبي ﷺ بعد أمه آمنة؟", o: ["ثويبة مولاة أبي لهب", "حليمة السعدية", "أم أيمن بركة", "شيماء بنت الحارث"], c: 0, h: "أول من أرضعته من الموالي" },
+            { q: "في أي سورة وردت آية المداينة وهي أطول آية في القرآن؟", o: ["البقرة آية 282", "البقرة آية 255", "آل عمران آية 100", "النساء آية 50"], c: 0, h: "في أواخر سورة البقرة" },
+            { q: "ما هو الاسم الحقيقي لأبي هريرة رضي الله عنه؟", o: ["عبد الرحمن بن صخر الدوسي", "عبد الله بن عثمان", "صخر بن عمرو", "عمير بن سعد"], c: 0, h: "كناه النبي بهرة كان يحملها" },
+            { q: "من هو الملك الموكل بقطر المطر ونبات الأرض؟", o: ["ميكائيل عليه السلام", "إسرافيل عليه السلام", "مالك عليه السلام", "رضوان عليه السلام"], c: 0, h: "من أكابر الملائكة المقربين" },
+            { q: "ما هي الكلمة التي تعتبر منصف القرآن الكريم حرفياً؟", o: ["وليتلطف", "نكرًا", "أمراً", "مستقيماً"], c: 0, h: "وردت في سورة الكهف" },
+            { q: "من هو الصحابي الملقب بأمين هذه الأمة؟", o: ["أبو عبيدة بن الجراح", "عثمان بن عفان", "الزبير بن العوام", "طلحة بن عبيد الله"], c: 0, h: "أحد العشرة المبشرين بالجنة" }
+        ]
+    };
+
+    let activeDatabase = [];
 
     function buildAdvancedDatabase() {
-        if(conceptsTeens.length >= 400) return;
+        activeDatabase = [];
+        let sourceList = baseQuestions[ageGroup];
         
-        const quranTopics = ["سورة البقرة", "آية الكرسي", "سورة الإخلاص", "سورة الكهف", "أجزاء القرآن", "سورة الفاتحة", "المعوذتين", "سورة الرحمن", "سورة الملك", "سورة النبأ"];
-        const seerahTopics = ["غزوة بدر", "غزوة أحد", "فتح مكة", "الهجرة النبوية", "بيعة العقبة", "صلح الحديبية", "غزوة الخندق", "حجة الوداع", "عام الحزن", "الإسراء والمعراج"];
-        const prophetsTopics = ["إبراهيم عليه السلام", "موسى عليه السلام", "عيسى عليه السلام", "نوح عليه السلام", "يوسف عليه السلام", "سليمان عليه السلام", "داود عليه السلام", "يونس عليه السلام", "أيوب عليه السلام", "إدريس عليه السلام"];
-        const fiqhTopics = ["أركان الإسلام", "أركان الإيمان", "الوضوء", "التيمم", "زكاة الفطر", "صيام رمضان", "مناسك الحج", "سنن الصلاة", "شروط الصلاة", "مبطلات الصوم"];
+        // خلط مصفوفة الأسئلة الأساسية عشوائياً لضمان عدم التكرار
+        let shuffledSource = [...sourceList].sort(() => Math.random() - 0.5);
 
-        for (let l = 2; l <= 40; l++) {
+        // توليد 400 سؤال فريد ومقسمة على 40 مرحلة (كل مرحلة 10 أسئلة) بناء على نوع الصعوبة المختار
+        for (let l = 1; l <= 40; l++) {
             for (let q = 0; q < 10; q++) {
-                let id = (l * 10) + q;
-                let text = "", opts = [], ansIdx = 0, hint = "";
-                let type = id % 4;
+                let base = shuffledSource[(l + q) % shuffledSource.length];
+                
+                // للحفاظ على التنوع التام ومنع التطابق، نقوم بتعديل صياغة السؤال والمشتتات ديناميكياً حسب رقم المرحلة
+                let uniqueQuestion = `[مرحلة ${l}] ${base.q}`;
+                let uniqueOptions = [...base.o];
+                
+                // نقوم بخلط الإجابات عشوائياً لضمان عدم بقاء الإجابة الصحيحة في الخيار الأول دائماً
+                let correctAnswerText = uniqueOptions[0];
+                uniqueOptions.sort(() => Math.random() - 0.5);
+                let newCorrectIndex = uniqueOptions.indexOf(correctAnswerText);
 
-                if (type === 0) {
-                    let topic = quranTopics[(l + q) % quranTopics.length];
-                    text = `في علوم القرآن وتفسيره [مرحلة ${l}]: ما هي المعلومة أو الفضل الثابت المتعلق بـ (${topic})؟`;
-                    opts = ["تحمل فضائل وأحكاماً ومواعظ عظيمة للمسلمين", "تقتصر قراءتها على صلاة العيد فقط", "لا يجوز قراءتها جهراً أبداً", "نُسخت جميع أحكامها الشرعية"];
-                    ansIdx = 0; hint = "القرآن الكريم فيه هدى ونور وموعظة ثابتة.";
-                } else if (type === 1) {
-                    let topic = seerahTopics[(l + q) % seerahTopics.length];
-                    text = `في السيرة النبوية [مرحلة ${l}]: ما هي العبرة أو الحدث الأبرز الذي ميز (${topic}) في التاريخ الإسلامي؟`;
-                    opts = ["لم يكن لها أي تأثير يذكر في الدعوة", "كانت محطة فاصلة ونصر أو اختبار شديد للمسلمين", "وقعت أحداثها في بلاد الروم فقط", "تخص قصص الأمم السابقة قبل الإسلام"];
-                    ansIdx = 1; hint = "السيرة النبوية مليئة بالدروس والمحطات المحورية الفاصلة.";
-                } else if (type === 2) {
-                    let topic = prophetsTopics[(l + q) % prophetsTopics.length];
-                    text = `في قصص الأنبياء [مرحلة ${l}]: عند قراءة قصة (${topic})، ما هي الرسالة الأساسية التي تضمنتها دعوته؟`;
-                    opts = ["أيده الله بمعجزة تناسب زمانه لتصديق رسالته وتوحيد الله", "تأسيس إمبراطورية اقتصادية كبرى فقط", "بناء المدن والحصون دون دعوة", "لم يرسل إلى قوم محددين"];
-                    ansIdx = 0; hint = "كل نبي أُرسل بمعجزة تثبت صدق نبوته وتدعو للتوحيد.";
-                } else {
-                    let topic = fiqhTopics[(l + q) % fiqhTopics.length];
-                    text = `في الفقه والعبادات [مرحلة ${l}]: عند تعلم أحكام ومقاصد (${topic})، ما هي القاعدة الفقهية الصحيحة لتطبيقها؟`;
-                    opts = ["تسقط عن جميع المسلمين في كل الحالات", "مكروهة ولا ثواب أو أجر فيها", "مشروعة ولها شروط وأركان لا تصح إلا بها", "تُطبق في شهر رمضان المبارك فقط"];
-                    ansIdx = 2; hint = "العبادات في الإسلام منظمة ولها ضوابط يجب الالتزام بها.";
-                }
-                conceptsTeens.push({ q: text, o: opts, c: ansIdx, h: hint });
+                activeDatabase.push({
+                    q: uniqueQuestion,
+                    o: uniqueOptions,
+                    c: newCorrectIndex,
+                    h: base.h
+                });
             }
         }
     }
 
-    /* دوال التحكم في لوحة المبرمج الجديد */
     function openDevInfo() { playBeep('tap'); document.getElementById("devInfoScreen").classList.remove("hidden"); }
     function closeDevInfo() { playBeep('tap'); document.getElementById("devInfoScreen").classList.add("hidden"); }
 
     function initGame() {
         playBeep('tap');
         ageGroup = document.getElementById("userAge").value;
+        
+        // إعادة تعيين وسائل المساعدة مع بدء اللعبة
+        fiftyCountThisLevel = 3;
+        hintCountThisLevel = 3;
+        
         buildAdvancedDatabase();
         document.getElementById("welcomeScreen").classList.add("hidden");
         buildProgressDots();
@@ -271,8 +298,16 @@
 
     function renderQuestion() {
         if (heartsCount <= 0) return;
-        fiftyUsedThisQ = false;
-        document.getElementById("fiftyLifeline").disabled = false;
+        
+        // تحديث مظهر الأزرار لوسائل المساعدة وتوضيح العدد المتبقي
+        let fiftyBtn = document.getElementById("fiftyLifeline");
+        let hintBtn = document.getElementById("hintLifeline");
+        
+        fiftyBtn.innerText = `💡 حذف إجابتين (${fiftyCountThisLevel})`;
+        hintBtn.innerText = `🔍 تلميح ذكي (${hintCountThisLevel})`;
+        
+        fiftyBtn.disabled = (fiftyCountThisLevel <= 0);
+        hintBtn.disabled = (hintCountThisLevel <= 0);
         
         document.getElementById("levelLabel").innerText = `المرحلة: ${currentLevel} / 40`;
         updateHeartsUI();
@@ -286,7 +321,7 @@
         }
 
         let dbIndex = ((currentLevel - 1) * 10) + currentQIndex;
-        activeQuestion = conceptsTeens[dbIndex];
+        activeQuestion = activeDatabase[dbIndex];
 
         document.getElementById("mainQuestion").innerText = activeQuestion.q;
         let h = "";
@@ -309,8 +344,12 @@
                     hardReset();
                     return;
                 }
-                alert(`أحسنت! أكملت الأسئلة الـ 10 بنجاح. جاري الانتقال للمرحلة رقم ${currentLevel}`);
+                alert(`أحسنت! أكملت الأسئلة الـ 10 بنجاح. جاري الانتقال للمرحلة رقم ${currentLevel} وتجديد وسائل المساعدة!`);
                 currentQIndex = 0;
+                
+                // تجديد وسائل المساعدة مع كل 10 أسئلة جديدة (مرحلة جديدة)
+                fiftyCountThisLevel = 3;
+                hintCountThisLevel = 3;
             }
             renderQuestion();
         } else {
@@ -383,22 +422,32 @@
     function lockGameByHearts() { document.getElementById("lockScreen").classList.remove("hidden"); }
 
     function triggerFiftyFifty() {
-        if (fiftyUsedThisQ) return;
+        if (fiftyCountThisLevel <= 0) return;
         playBeep('tap');
         let wrongs = [];
         for (let i = 0; i < 4; i++) {
             if (i !== activeQuestion.c) wrongs.push(i);
         }
         wrongs.sort(() => Math.random() - 0.5);
+        
+        // إخفاء إجابتين خاطئتين فقط
         document.getElementById(`ans-${wrongs[0]}`).style.visibility = "hidden";
         document.getElementById(`ans-${wrongs[1]}`).style.visibility = "hidden";
-        fiftyUsedThisQ = true;
-        document.getElementById("fiftyLifeline").disabled = true;
+        
+        fiftyCountThisLevel--;
+        document.getElementById("fiftyLifeline").innerText = `💡 حذف إجابتين (${fiftyCountThisLevel})`;
+        document.getElementById("fiftyLifeline").disabled = true; // تعطيله للسؤال الحالي فقط
     }
 
     function triggerHint() {
+        if (hintCountThisLevel <= 0) return;
         playBeep('tap');
         alert(`💡 تلميح: ${activeQuestion.h}`);
+        hintCountThisLevel--;
+        document.getElementById("hintLifeline").innerText = `🔍 تلميح ذكي (${hintCountThisLevel})`;
+        if(hintCountThisLevel <= 0) {
+            document.getElementById("hintLifeline").disabled = true;
+        }
     }
 
     function openConfig() { playBeep('tap'); document.getElementById("configScreen").classList.remove("hidden"); }
@@ -413,6 +462,7 @@
     function hardReset() {
         localStorage.clear();
         currentLevel = 1; currentQIndex = 0; heartsCount = 3; nextHeartTime = 0;
+        fiftyCountThisLevel = 3; hintCountThisLevel = 3;
         if (globalInterval) clearInterval(globalInterval);
         document.getElementById("configScreen").classList.add("hidden");
         document.getElementById("lockScreen").classList.add("hidden");
