@@ -183,30 +183,7 @@
 
 <script>
     // ==========================================
-    // كود عداد الزوار التلقائي (الأسهل بدون حسابات)
-    // ==========================================
-    function updateCounter() {
-        // نستخدم رابطاً مخصصاً للعبتك "من سيربح الحسنات" ليقوم بالعد التلقائي بالثانية
-        const url = "https://api.countapi.xyz/hit/majd_alhasanat_game/visits";
-        
-        fetch(url)
-        .then(res => res.json())
-        .then(data => {
-            if(data.value) {
-                document.getElementById("visitCount").innerText = data.value;
-            }
-        })
-        .catch(err => {
-            // في حال واجهت الخدمة أي بطء، يعرض رقماً افتراضياً سريعاً لجمالية التصميم
-            document.getElementById("visitCount").innerText = "1";
-        });
-    }
-    
-    // تشغيل وتحديث العداد تلقائياً فور فتح الصفحة
-    updateCounter();
-    setInterval(updateCounter, 2000); // تحديث العداد كل ثانيتين للاستمرار في التتبع
-
-    // ==========================================
+    //  ==========================================
     // بقية أكواد اللعبة الأساسية الخاصة بك دون أي تعديل
     // ==========================================
     let currentLevel = parseInt(localStorage.getItem('savedLevel')) || 1;
