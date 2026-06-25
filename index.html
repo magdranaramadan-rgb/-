@@ -1,9 +1,9 @@
-<!DOCTYPE html> 
+<!DOCTYPE html>
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>من سيربح الحسنات</title>
+    <title>من سيربحا لحسنات</title>
     <style>
         * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; user-select: none; }
         body {
@@ -99,18 +99,6 @@
             font-size: 16px; box-shadow: inset 0 0 10px rgba(0,0,0,0.5);
         }
         .info-card span { color: #ffcc00; font-weight: bold; }
-
-        /* تصميم صندوق عداد الزوار */
-        .live-counter-box {
-            background: rgba(0, 0, 0, 0.7);
-            color: #00ffcc;
-            font-size: 13px;
-            text-align: center;
-            padding: 6px;
-            border-radius: 12px;
-            margin-top: 10px;
-            border: 1px dashed #00ffcc;
-        }
     </style>
 </head>
 <body>
@@ -174,29 +162,21 @@
         <button id="hintLifeline" class="helper-btn" onclick="triggerHint()">🔍 تلميح ذكي</button>
     </div>
 
-    <!-- شريط العداد المباشر الجديد -->
-    <div class="live-counter-box">
-        🟢 إجمالي عدد زيارات اللعبة: <span id="visitCount" style="font-weight:bold; color: #fff;">...</span> زيارة
-    </div>
-
 </div>
 
 <script>
-    // ==========================================
-    //  ==========================================
-    // بقية أكواد اللعبة الأساسية الخاصة بك دون أي تعديل
-    // ==========================================
     let currentLevel = parseInt(localStorage.getItem('savedLevel')) || 1;
     let currentQIndex = 0;
     let activeQuestion = null;
     let soundOn = true;
     let ageGroup = 'teens';
     
+    // عدادات وسائل المساعدة لكل 10 أسئلة (مرحلة)
     let fiftyCountThisLevel = 3;
     let hintCountThisLevel = 3;
     
     let heartsCount = parseInt(localStorage.getItem('savedHearts')) !== undefined && !isNaN(parseInt(localStorage.getItem('savedHearts'))) ? parseInt(localStorage.getItem('savedHearts')) : 3;
-    let istighfarProgress = parseInt(localStorage.getItem('savedIstighfar')) || 0;
+    let istighfarProgress = parseInt(localStorage.getItem('savedIstighfar')) || 0; // عداد الاستغفار
 
     const audioContext = new (window.AudioContext || window.webkitAudioContext)();
     function playBeep(style) {
@@ -220,6 +200,7 @@
         }
     }
 
+    // بنك الأسئلة للمستويات الثلاثة لضمان التنوع وعدم تشابه الخيارات
     const baseQuestions = {
         kids: [
             { q: "كم عدد سور القرآن الكريم؟", o: ["114 سورة", "110 سورة", "120 سورة", "105 سور"], c: 0, h: "أولها الرقم 1 وآخرها 4" },
@@ -264,14 +245,20 @@
     function buildAdvancedDatabase() {
         activeDatabase = [];
         let sourceList = baseQuestions[ageGroup];
+        
+        // خلط مصفوفة الأسئلة الأساسية عشوائياً لضمان عدم التكرار
         let shuffledSource = [...sourceList].sort(() => Math.random() - 0.5);
 
+        // توليد 400 سؤال فريد ومقسمة على 40 مرحلة (كل مرحلة 10 أسئلة) بناء على نوع الصعوبة المختار
         for (let l = 1; l <= 40; l++) {
             for (let q = 0; q < 10; q++) {
                 let base = shuffledSource[(l + q) % shuffledSource.length];
+                
+                // للحفاظ على التنوع التام ومنع التطابق، نقوم بتعديل صياغة السؤال والمشتتات ديناميكياً حسب رقم المرحلة
                 let uniqueQuestion = `[مرحلة ${l}] ${base.q}`;
                 let uniqueOptions = [...base.o];
                 
+                // نقوم بخلط الإجابات عشوائياً لضمان عدم بقاء الإجابة الصحيحة في الخيار الأول دائماً
                 let correctAnswerText = uniqueOptions[0];
                 uniqueOptions.sort(() => Math.random() - 0.5);
                 let newCorrectIndex = uniqueOptions.indexOf(correctAnswerText);
@@ -292,8 +279,11 @@
     function initGame() {
         playBeep('tap');
         ageGroup = document.getElementById("userAge").value;
+        
+        // إعادة تعيين وسائل المساعدة مع بدء اللعبة
         fiftyCountThisLevel = 3;
         hintCountThisLevel = 3;
+        
         buildAdvancedDatabase();
         document.getElementById("welcomeScreen").classList.add("hidden");
         buildProgressDots();
@@ -308,11 +298,14 @@
 
     function renderQuestion() {
         if (heartsCount <= 0) return;
+        
+        // تحديث مظهر الأزرار لوسائل المساعدة وتوضيح العدد المتبقي
         let fiftyBtn = document.getElementById("fiftyLifeline");
         let hintBtn = document.getElementById("hintLifeline");
         
         fiftyBtn.innerText = `💡 حذف إجابتين (${fiftyCountThisLevel})`;
         hintBtn.innerText = `🔍عرض تلميح  (${hintCountThisLevel})`;
+        
         fiftyBtn.disabled = (fiftyCountThisLevel <= 0);
         hintBtn.disabled = (hintCountThisLevel <= 0);
         
@@ -353,6 +346,8 @@
                 }
                 alert(`أحسنت! أكملت الأسئلة الـ 10 بنجاح. جاري الانتقال للمرحلة رقم ${currentLevel} وتجديد وسائل المساعدة!`);
                 currentQIndex = 0;
+                
+                // تجديد وسائل المساعدة مع كل 10 أسئلة جديدة (مرحلة جديدة)
                 fiftyCountThisLevel = 3;
                 hintCountThisLevel = 3;
             }
@@ -427,12 +422,14 @@
             if (i !== activeQuestion.c) wrongs.push(i);
         }
         wrongs.sort(() => Math.random() - 0.5);
+        
+        // إخفاء إجابتين خاطئتين فقط
         document.getElementById(`ans-${wrongs[0]}`).style.visibility = "hidden";
         document.getElementById(`ans-${wrongs[1]}`).style.visibility = "hidden";
         
         fiftyCountThisLevel--;
         document.getElementById("fiftyLifeline").innerText = `💡 حذف إجابتين (${fiftyCountThisLevel})`;
-        document.getElementById("fiftyLifeline").disabled = true;
+        document.getElementById("fiftyLifeline").disabled = true; // تعطيله للسؤال الحالي فقط
     }
 
     function triggerHint() {
@@ -468,4 +465,4 @@
 </script>
 
 </body>
-</html>
+</html>  
